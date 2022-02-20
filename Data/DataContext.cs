@@ -10,6 +10,6 @@ namespace OTP_generator.Data
 
         }
 
-        public DbSet<OtpModel>? OTPs { get; set; }
+        public DbSet<OtpModel> OTPs { get; set; }
     }
 }

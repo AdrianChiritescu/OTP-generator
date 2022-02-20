@@ -19,7 +19,7 @@ namespace OTP_generator.Controllers
         [HttpGet]
         public async Task<ActionResult<ServiceResponse<string>>> GetOtp()
         {
-            return Ok(await _otpService.GetLastGeneratedOtp());
+            return Ok(await _otpService.GetCurrentOtp());
         }
 
         [HttpPost("GenerateNew")]
@@ -29,7 +29,7 @@ namespace OTP_generator.Controllers
 
             try
             {
-                serviceResponse = await _otpService.GenerateNewOtp(addOtpDto);
+                serviceResponse = await _otpService.AddNewOtp(addOtpDto);
             }
             catch (Exception ex)
             {
