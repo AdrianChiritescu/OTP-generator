@@ -1,6 +1,6 @@
 namespace OTP_generator.DTOs.OTP
 {
-    public class AddOneTimePasswordDto
+    public class GetOtpDto
     {
 
     }
