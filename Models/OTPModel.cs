@@ -1,6 +1,6 @@
 namespace OTP_generator.Models
 {
-    public class OTPModel
+    public class OtpModel
     {
         public int Id { get; set; }
         public string UserId { get; set; } = string.Empty;

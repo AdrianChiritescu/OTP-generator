@@ -2,9 +2,9 @@ using OTP_generator.Models;
 
 namespace OTP_generator.Services
 {
-    public interface IOTPService
+    public interface IOtpService
     {
-        Task<ServiceResponse<string>> GetLastGeneratedOTP();
-        Task<ServiceResponse<string>> GenerateNewOTP(OTPModel otpModel);
+        Task<ServiceResponse<string>> GetLastGeneratedOtp();
+        Task<ServiceResponse<string>> GenerateNewOtp(OtpModel otpModel);
     }
 }

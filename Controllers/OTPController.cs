@@ -6,29 +6,29 @@ namespace OTP_generator.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class OTPController : ControllerBase
+    public class OtpController : ControllerBase
     {
-        private readonly IOTPService _otpService;
+        private readonly IOtpService _otpService;
 
-        public OTPController(IOTPService otpService)
+        public OtpController(IOtpService otpService)
         {
             _otpService = otpService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<ServiceResponse<string>>> GetOTP()
+        public async Task<ActionResult<ServiceResponse<string>>> GetOtp()
         {
-            return Ok(await _otpService.GetLastGeneratedOTP());
+            return Ok(await _otpService.GetLastGeneratedOtp());
         }
 
         [HttpPost("GenerateNew")]
-        public async Task<ActionResult<ServiceResponse<string>>> GenerateNewOTP(OTPModel otpModel)
+        public async Task<ActionResult<ServiceResponse<string>>> GenerateNewOtp(OtpModel otpModel)
         {
             var serviceResponse = new ServiceResponse<string>();
 
             try
             {
-                serviceResponse = await _otpService.GenerateNewOTP(otpModel);
+                serviceResponse = await _otpService.GenerateNewOtp(otpModel);
             }
             catch (Exception ex)
             {
