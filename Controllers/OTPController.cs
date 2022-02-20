@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OTP_generator.Services;
 using OTP_generator.Models;
+using OTP_generator.DTOs.OTP;
 
 namespace OTP_generator.Controllers
 {
@@ -22,13 +23,13 @@ namespace OTP_generator.Controllers
         }
 
         [HttpPost("GenerateNew")]
-        public async Task<ActionResult<ServiceResponse<string>>> GenerateNewOtp(OtpModel otpModel)
+        public async Task<ActionResult<ServiceResponse<GetOtpDto>>> GenerateNewOtp(AddOtpDto addOtpDto)
         {
-            var serviceResponse = new ServiceResponse<string>();
+            var serviceResponse = new ServiceResponse<GetOtpDto>();
 
             try
             {
-                serviceResponse = await _otpService.GenerateNewOtp(otpModel);
+                serviceResponse = await _otpService.GenerateNewOtp(addOtpDto);
             }
             catch (Exception ex)
             {
