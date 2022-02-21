@@ -17,27 +17,29 @@ namespace OTP_generator.Controllers
         }
 
         [HttpGet("{userId}")]
-        public async Task<ActionResult<ServiceResponse<string>>> GetOtp(string userId)
+        public async Task<ActionResult<ServiceResponse<GetOtpDto>>> GetOtp(string userId)
         {
-            return Ok(await _otpService.GetCurrentOtp(userId));
+            var response = await _otpService.GetCurrentOtp(userId);
+
+            if (response.Data == null) { return NotFound(response); }
+
+            return Ok(response);
         }
 
         [HttpPost("GenerateNew")]
         public async Task<ActionResult<ServiceResponse<GetOtpDto>>> GenerateNewOtp(AddOtpDto addOtpDto)
         {
-            var serviceResponse = new ServiceResponse<GetOtpDto>();
+            var response = await _otpService.AddNewOtp(addOtpDto);
 
-            try
-            {
-                serviceResponse = await _otpService.AddNewOtp(addOtpDto);
-            }
-            catch (Exception ex)
-            {
-                serviceResponse.Success = false;
-                serviceResponse.Message = ex.Message;
-            }
+            return Ok(response);
+        }
 
-            return Ok(serviceResponse);
+        [HttpDelete("{userId}")]
+        public async Task<ActionResult<ServiceResponse<GetOtpDto>>> DeleteOtp(string userId)
+        {
+            var response = await _otpService.DeleteOtp(userId);
+
+            return Ok(response);
         }
     }
 }

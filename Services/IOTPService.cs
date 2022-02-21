@@ -7,5 +7,6 @@ namespace OTP_generator.Services
     {
         Task<ServiceResponse<GetOtpDto>> GetCurrentOtp(string userId);
         Task<ServiceResponse<GetOtpDto>> AddNewOtp(AddOtpDto addOtpDto);
+        Task<ServiceResponse<GetOtpDto>> DeleteOtp(string userId);
     }
 }

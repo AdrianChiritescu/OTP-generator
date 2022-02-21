@@ -1,7 +1,8 @@
+using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 using OTP_generator.Models;
 using OTP_generator.DTOs.OTP;
 using OTP_generator.Data;
-using AutoMapper;
 
 namespace OTP_generator.Services
 {
@@ -18,14 +19,17 @@ namespace OTP_generator.Services
 
         public async Task<ServiceResponse<GetOtpDto>> GetCurrentOtp(string userId)
         {
-            var userOtp = RetrieveOtpForUser(userId);
+            var userOtp = await _dataContext.OTPs.FirstOrDefaultAsync(x => x.UserId == userId);
 
-            if(userOtp == null || (userOtp != null && IsExpired(userOtp)))
+            if (userOtp == null || (userOtp != null && IsExpired(userOtp)))
             {
+                await DeleteOtp(userId);
+
                 return new ServiceResponse<GetOtpDto>
                 {
+                    Data = null,
                     Success = false,
-                    Message = "There is no valid password. Please generate one."
+                    Message = "The password is expired. Please generate a new password."
                 };
             }
 
@@ -40,35 +44,49 @@ namespace OTP_generator.Services
 
         public async Task<ServiceResponse<GetOtpDto>> AddNewOtp(AddOtpDto addOtpDto)
         {
-            var userOtp = RetrieveOtpForUser(addOtpDto.UserId);
+            var serviceResponse = new ServiceResponse<GetOtpDto> { Message = "Password generated successfully." };
 
-            if (userOtp != null && !IsExpired(userOtp)) 
-            {                 
-                return new ServiceResponse<GetOtpDto>
-                { 
-                    Success = false,
-                    Message = "Cannot generate new OTP yet."
-                }; 
-            }
-
-            var OTP = GenerateOtp();
-
-            addOtpDto.OTP = OTP;
-            addOtpDto.ExpiresIn = 30; // Seconds
-            addOtpDto.Timestamp = DateTime.Now;
-
-            _dataContext.OTPs.Add(_mapper.Map<OtpModel>(addOtpDto));
-            await _dataContext.SaveChangesAsync();
-
-            return new ServiceResponse<GetOtpDto>
+            try
             {
-                Data = new GetOtpDto
+                var userOtp = await _dataContext.OTPs.FirstOrDefaultAsync(x => x.UserId == addOtpDto.UserId);
+
+                if (userOtp != null) 
+                {            
+                    if(!IsExpired(userOtp))
+                    {
+                        serviceResponse.Success = false;
+                        serviceResponse.Message = "Cannot generate new OTP yet.";
+
+                        return serviceResponse;
+                    }     
+                    else
+                    {
+                        await DeleteOtp(addOtpDto.UserId);
+                    }
+                }
+
+                var OTP = GenerateOtp();
+
+                addOtpDto.OTP = OTP;
+                addOtpDto.ExpiresIn = 30; // Seconds
+                addOtpDto.Timestamp = DateTime.Now;
+
+                _dataContext.OTPs.Add(_mapper.Map<OtpModel>(addOtpDto));
+                await _dataContext.SaveChangesAsync();
+
+                serviceResponse.Data = new GetOtpDto
                 {
                     OTP = OTP,
                     SecondsToExpire = 30 // Seconds
-                },
-                Message = "Password generated successfully."
-            };
+                };
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+
+            return serviceResponse;
         }
 
         private string GenerateOtp()
@@ -88,11 +106,24 @@ namespace OTP_generator.Services
             return elapsedTime >= 30;
         }
 
-        private OtpModel RetrieveOtpForUser(string userId)
+        public async Task<ServiceResponse<GetOtpDto>> DeleteOtp(string userId)
         {
-            return _dataContext.OTPs.Where(x => x.UserId == userId)
-                                    .OrderByDescending(x => x.Id)
-                                    .FirstOrDefault();
+            var serviceResponse = new ServiceResponse<GetOtpDto> { Message = "OTP deleted successfully." };
+
+            try
+            {
+                var OTP = await _dataContext.OTPs.FirstAsync(x => x.UserId == userId);
+
+                _dataContext.OTPs.Remove(OTP);
+                await _dataContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+
+            return serviceResponse;
         }
     }
 }
