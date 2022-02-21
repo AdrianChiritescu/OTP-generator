@@ -5,7 +5,7 @@ namespace OTP_generator.Services
 {
     public interface IOtpService
     {
-        Task<ServiceResponse<GetOtpDto>> GetCurrentOtp();
+        Task<ServiceResponse<GetOtpDto>> GetCurrentOtp(string userId);
         Task<ServiceResponse<GetOtpDto>> AddNewOtp(AddOtpDto addOtpDto);
     }
 }

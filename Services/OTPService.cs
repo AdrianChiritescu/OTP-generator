@@ -16,24 +16,43 @@ namespace OTP_generator.Services
             _mapper = mapper;
         }
 
-        public async Task<ServiceResponse<GetOtpDto>> GetCurrentOtp()
+        public async Task<ServiceResponse<GetOtpDto>> GetCurrentOtp(string userId)
         {
-            return new ServiceResponse<GetOtpDto>();
+            var userOtp = RetrieveOtpForUser(userId);
+
+            if(userOtp == null || (userOtp != null && IsExpired(userOtp)))
+            {
+                return new ServiceResponse<GetOtpDto>
+                {
+                    Success = false,
+                    Message = "There is no valid password. Please generate one."
+                };
+            }
+
+            var getOtpDto = _mapper.Map<GetOtpDto>(userOtp);
+
+            return new ServiceResponse<GetOtpDto>
+            {
+                Data = getOtpDto,
+                Message = "Password retrived successfully."
+            };
         }
 
         public async Task<ServiceResponse<GetOtpDto>> AddNewOtp(AddOtpDto addOtpDto)
         {
-            var OTP = GenerateOtp();
+            var userOtp = RetrieveOtpForUser(addOtpDto.UserId);
 
-            if(OTP == null)
-            {
+            if (userOtp != null && !IsExpired(userOtp)) 
+            {                 
                 return new ServiceResponse<GetOtpDto>
                 { 
                     Success = false,
                     Message = "Cannot generate new OTP yet."
-                };
+                }; 
             }
-            
+
+            var OTP = GenerateOtp();
+
             addOtpDto.OTP = OTP;
             addOtpDto.ExpiresIn = 30; // Seconds
             addOtpDto.Timestamp = DateTime.Now;
@@ -52,10 +71,8 @@ namespace OTP_generator.Services
             };
         }
 
-        private string? GenerateOtp()
+        private string GenerateOtp()
         {
-            if (!CanGenerate()) { return null; }
-
             var random = new Random();
             var otp = Enumerable.Repeat("0123456789", 6)
                                 .Select(diggits => diggits[random.Next(diggits.Length)])
@@ -64,16 +81,18 @@ namespace OTP_generator.Services
             return new string(otp);
         }
 
-        private bool CanGenerate()
+        private bool IsExpired(OtpModel OtpModel)
         {
-            var lastOtpEntry = _dataContext.OTPs.OrderByDescending(x => x.Id)
-                            .FirstOrDefault();
-
-            if (lastOtpEntry == null) { return true; }
-
-            var elapsedTime = (DateTime.Now - lastOtpEntry.Timestamp).TotalSeconds;
+            var elapsedTime = (DateTime.Now - OtpModel.Timestamp).TotalSeconds;
 
             return elapsedTime >= 30;
+        }
+
+        private OtpModel RetrieveOtpForUser(string userId)
+        {
+            return _dataContext.OTPs.Where(x => x.UserId == userId)
+                                    .OrderByDescending(x => x.Id)
+                                    .FirstOrDefault();
         }
     }
 }

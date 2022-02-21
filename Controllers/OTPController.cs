@@ -16,10 +16,10 @@ namespace OTP_generator.Controllers
             _otpService = otpService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<ServiceResponse<string>>> GetOtp()
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<ServiceResponse<string>>> GetOtp(string userId)
         {
-            return Ok(await _otpService.GetCurrentOtp());
+            return Ok(await _otpService.GetCurrentOtp(userId));
         }
 
         [HttpPost("GenerateNew")]
