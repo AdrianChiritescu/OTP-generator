@@ -112,7 +112,13 @@ namespace OTP_generator.Services
 
             try
             {
-                var OTP = await _dataContext.OTPs.FirstAsync(x => x.UserId == userId);
+                var OTP = await _dataContext.OTPs.FirstOrDefaultAsync(x => x.UserId == userId);
+
+                if (OTP == null) 
+                { 
+                    serviceResponse.Message = "No OTP to be deleted.";
+                    return serviceResponse;
+                }
 
                 _dataContext.OTPs.Remove(OTP);
                 await _dataContext.SaveChangesAsync();
