@@ -21,38 +21,59 @@ namespace OTP_generator.Services
             return new ServiceResponse<GetOtpDto>();
         }
 
-        public async Task<ServiceResponse<GetOtpDto>> AddNewOtp(AddOtpDto newOtp)
+        public async Task<ServiceResponse<GetOtpDto>> AddNewOtp(AddOtpDto addOtpDto)
         {
-            if (true) // TODO: Check if allowed to generate a new OTP.
+            var OTP = GenerateOtp();
+
+            if(OTP == null)
             {
-
+                return new ServiceResponse<GetOtpDto>
+                { 
+                    Success = false,
+                    Message = "Cannot generate new OTP yet."
+                };
             }
+            
+            addOtpDto.OTP = OTP;
+            addOtpDto.ExpiresIn = 30; // Seconds
+            addOtpDto.Timestamp = DateTime.Now;
 
-            var otp = GenerateOtp();
-            newOtp.OTP = otp;
-            newOtp.ExpiresIn = 30; // Seconds.
-
-            _dataContext.OTPs.Add(_mapper.Map<OtpModel>(newOtp));
+            _dataContext.OTPs.Add(_mapper.Map<OtpModel>(addOtpDto));
             await _dataContext.SaveChangesAsync();
 
             return new ServiceResponse<GetOtpDto>
             {
                 Data = new GetOtpDto
                 {
-                    OTP = new string(otp),
-                    SecondsToExpire = 3 * 10 // Seconds
-                }
+                    OTP = OTP,
+                    SecondsToExpire = 30 // Seconds
+                },
+                Message = "Password generated successfully."
             };
         }
 
-        private string GenerateOtp()
+        private string? GenerateOtp()
         {
+            if (!CanGenerate()) { return null; }
+
             var random = new Random();
-            var otp = Enumerable.Repeat("123456789", 6)
+            var otp = Enumerable.Repeat("0123456789", 6)
                                 .Select(diggits => diggits[random.Next(diggits.Length)])
                                 .ToArray();
 
             return new string(otp);
+        }
+
+        private bool CanGenerate()
+        {
+            var lastOtpEntry = _dataContext.OTPs.OrderByDescending(x => x.Id)
+                            .FirstOrDefault();
+
+            if (lastOtpEntry == null) { return true; }
+
+            var elapsedTime = (DateTime.Now - lastOtpEntry.Timestamp).TotalSeconds;
+
+            return elapsedTime >= 30;
         }
     }
 }
