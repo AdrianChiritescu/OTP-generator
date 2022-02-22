@@ -84,23 +84,6 @@ namespace OTP_generator.Services
             return serviceResponse;
         }
 
-        private string GenerateOtp()
-        {
-            var random = new Random();
-            var otp = Enumerable.Repeat("0123456789", 6)
-                                .Select(diggits => diggits[random.Next(diggits.Length)])
-                                .ToArray();
-
-            return new string(otp);
-        }
-
-        private bool IsExpired(OtpModel OtpModel)
-        {
-            var elapsedTime = (DateTime.Now - OtpModel.Timestamp).TotalSeconds;
-
-            return elapsedTime >= 30;
-        }
-
         public async Task<ServiceResponse<GetOtpDto>> DeleteOtp(string userId)
         {
             var serviceResponse = new ServiceResponse<GetOtpDto> { Message = "OTP deleted successfully." };
@@ -126,6 +109,23 @@ namespace OTP_generator.Services
             }
 
             return serviceResponse;
+        }
+
+        private bool IsExpired(OtpModel OtpModel)
+        {
+            var elapsedTime = (DateTime.Now - OtpModel.Timestamp).TotalSeconds;
+
+            return elapsedTime >= 30;
+        }
+
+        private string GenerateOtp()
+        {
+            var random = new Random();
+            var otp = Enumerable.Repeat("0123456789", 6)
+                                .Select(diggits => diggits[random.Next(diggits.Length)])
+                                .ToArray();
+
+            return new string(otp);
         }
     }
 }
