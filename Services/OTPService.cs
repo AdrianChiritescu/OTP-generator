@@ -50,20 +50,15 @@ namespace OTP_generator.Services
             {
                 var userOtp = await _dataContext.OTPs.FirstOrDefaultAsync(x => x.UserId == addOtpDto.UserId);
 
-                if (userOtp != null) 
+                if (userOtp != null && !IsExpired(userOtp))
                 {            
-                    if(!IsExpired(userOtp))
-                    {
-                        serviceResponse.Success = false;
-                        serviceResponse.Message = "Cannot generate new OTP yet.";
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Cannot generate new OTP yet.";
 
-                        return serviceResponse;
-                    }     
-                    else
-                    {
-                        await DeleteOtp(addOtpDto.UserId);
-                    }
+                    return serviceResponse;
                 }
+
+                await DeleteOtp(addOtpDto.UserId);
 
                 var OTP = GenerateOtp();
 
@@ -116,6 +111,7 @@ namespace OTP_generator.Services
 
                 if (OTP == null) 
                 { 
+                    serviceResponse.Success = false;
                     serviceResponse.Message = "No OTP to be deleted.";
                     return serviceResponse;
                 }
