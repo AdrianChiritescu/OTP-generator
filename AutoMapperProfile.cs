@@ -9,7 +9,9 @@ namespace OTP_generator
         public AutoMapperProfile()
         {
             CreateMap<AddOtpDto, OtpModel>();
+            CreateMap<GetOtpDto, OtpModel>();
             CreateMap<OtpModel, GetOtpDto>();
+            CreateMap<OtpModel, AddOtpDto>();
         }
     }
 }

@@ -21,7 +21,7 @@ namespace OTP_generator.Controllers
         {
             var response = await _otpService.GetCurrentOtp(userId);
 
-            if (response.Data == null) { return NotFound(response); }
+            if (response.Data == null) { return Ok(response); }
 
             return Ok(response);
         }

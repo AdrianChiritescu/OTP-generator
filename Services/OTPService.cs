@@ -52,6 +52,7 @@ namespace OTP_generator.Services
 
                 if (userOtp != null && !IsExpired(userOtp))
                 {            
+                    serviceResponse.Data = _mapper.Map<GetOtpDto>(userOtp);
                     serviceResponse.Success = false;
                     serviceResponse.Message = "Cannot generate new OTP yet.";
 
